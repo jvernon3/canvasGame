@@ -1,0 +1,30 @@
+body
+{
+text-align: center;
+user-select: none;
+}
+
+canvas
+{
+position: relative;
+border: thin solid black;
+display: block;
+margin: 0 auto 20px;
+background: url(../images/space.jpg) no-repeat;
+background-size: 600px 800px;
+}
+
+.hide-me
+{
+  display: none;
+}
+
+button
+{
+  margin: 0 8px;
+  user-select: none;
+  background-color: #5600B8;
+  color: #fff;
+  padding: 10px;
+  border-radius: 20px;
+}
