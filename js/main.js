@@ -3,33 +3,68 @@
   const theCanvas = document.querySelector('canvas'),
         ctx = theCanvas.getContext('2d'),
         player = { x : 275, y : 550, width : 50, height : 50, lives : 3, speed : 7 },
-        bullets = [],
-        boxes = [
-          { x : 30, y : 30, x1 : 30, y1 : 30, color : 'rgba(0, 0, 200, 0.5)', xspeed: 5, yspeed: 8 },
+        mouseTracker = { x : theCanvas.width / 2 },
+        //bullets = [],
+        enemy1 = document.querySelector('.enemyOne'),
+        enemy2 = document.querySelector('.enemyTwo'),
+        enemy3 = document.querySelector('.enemyThree'),
 
-          { x : 90, y : 90, x1 : 40, y1 : 40, color : 'rgba(0, 200, 0, 0.5)', xspeed: 5, yspeed: 8 },
+        playerLives = [1, 2, 3],
+        //boxes = [
+          //{ x : 30, y : 30, x1 : 30, y1 : 30, image : enemy1, xspeed: 5, yspeed: 8, points : 10 },
 
-          { x : 150, y : 150, x1 : 40, y1 : 40, color : 'rgba(200, 0, 0, 0.5)', xspeed: 3, yspeed: 5 },
+          //{ x : 90, y : 90, x1 : 40, y1 : 40, image : enemy2, xspeed: 5, yspeed: 3, points : 5 },
 
-          { x : 10, y : 10, x1 : 50, y1 : 50, color : 'rgba(200, 150, 0, 0.5)', xspeed: 15, yspeed: 5 },
-
-          { x : 30, y : 30, x1 : 90, y1 : 90, color : 'rgba(200, 150, 255, 0.5)', xspeed: 5, yspeed: 15 },
-
-          { x : 30, y : 30, x1 : 15, y1 : 15, color : 'rgba(0, 150, 255, 0.5)', xspeed: 2, yspeed: 3 },
-        ],
+          //{ x : 150, y : 150, x1 : 30, y1 : 30, image : enemy3, xspeed: 3, yspeed: 5, points : 10 },
+        //],
         playerImg = document.querySelector('.ship'),
         pauseButton = document.querySelector('.pause'),
-        playButton = document.querySelector('.play');
+        playButton = document.querySelector('.play'),
+        resetButton = document.querySelector('.reset'),
+        resetScreen = document.querySelector('.level-up');
 
-  var playState = true;
+  var playState = true,
+      score = 0,
+      boxes = [
+        { x : randomX(), y : 30, x1 : 30, y1 : 30, image : enemy1, xspeed: 5, yspeed: 8, points : 10 },
+
+        { x : randomX(), y : 90, x1 : 40, y1 : 40, image : enemy2, xspeed: 5, yspeed: 3, points : 5 },
+
+        { x : randomX(), y : 150, x1 : 30, y1 : 30, image : enemy3, xspeed: 3, yspeed: 5, points : 10 },
+      ],
+      bullets = [],
+      mousePos = theCanvas.width / 2;
 
   function draw() {
     ctx.clearRect(0, 0, theCanvas.width, theCanvas.height);
+
+    //draw in the score
+    ctx.fillStyle = 'rgba(255, 255, 255)';
+    ctx.font = '18px sans-serif';
+    ctx.fillText(`Score: ${score}`, 500, 20);
+
+
+    //draw the player lives
+    playerLives.forEach((player, index) => {
+      ctx.drawImage(playerImg, 10 + (index * 26), 10, 20, 20)
+    });
+
+    //draw the mouse tracker
+    ctx.beginPath();
+    ctx.moveTo(mouseTracker.x, theCanvas.height - 10);
+    ctx.lineTo(mouseTracker.x - 5, theCanvas.height);
+    ctx.lineTo(mouseTracker.x + 5, theCanvas.height);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.fill();
+
+    // draw the main player ship
+    dx = mousePos - player.x;
+    player.x += (dx / 10);
     ctx.drawImage(playerImg, player.x, player.y, player.width, player.height);
 
     //animate all the bullets
     bullets.forEach((bullet, index) => {
-      ctx.fillStyle = 'rgba(200, 0, 0, 0.9)';
+      ctx.fillStyle = 'rgba(255, 0, 0)';
       ctx.fillRect(bullet.x, bullet.y, bullet.x2, bullet.y2);
 
       bullet.y -= bullet.speed;
@@ -40,8 +75,15 @@
       boxes.forEach((box, index) => {
       if (bullet.y <= (box.y + box.y1) && bullet.y > box.y && bullet.x > box.x && bullet.x < (box.x + box.x1)) {
         //delete the square
-        delete boxes[index];
-        delete bullets[bulletIndex];
+        //delete boxes[index];
+        //delete bullets[bulletIndex];
+
+        bullets.splice(bulletIndex, 1);
+        boxes.splice(index, 1);
+
+        score += box.points;
+
+        console.log(`score is now: ${score}`);
 
         //create and play explosion sound here
         let boomsound = document.createElement('audio');
@@ -54,18 +96,25 @@
         });
 
         boomsound.play();
+
+        if (boxes.length == 0) {
+          //we cleared all the enemies
+          console.log('level up');
+          //call the level up function
+          levelUp();
+        }
       }
     });
 
       if (bullet.y < 0) {
-        delete bullets[index];
+        bullets.splice(index, 1);
       }
     });
 
     //draw boxes
     boxes.forEach(box => {
       ctx.fillStyle = box.color;
-      ctx.fillRect(box.x, box.y, box.x1, box.y1);
+      ctx.drawImage(box.image, box.x, box.y, box.x1, box.y1);
 
       if (box.x + box.x1 > theCanvas.width) {
         box.xspeed *=-1;
@@ -73,7 +122,7 @@
         box.xspeed *=-1;
       }
 
-      if (box.y + box.y1 > theCanvas.height) {
+      if (box.y + box.y1 > theCanvas.height - 100) {
         box.yspeed *=-1;
       } else if (box.y < 0) {
         box.yspeed *=-1;
@@ -109,7 +158,10 @@
   //}
 
   function moveShip(e) {
-    player.x = e.clientX - theCanvas.offsetLeft
+    //player.x = e.clientX - theCanvas.offsetLeft;
+    mousePos = (e.clientX - theCanvas.offsetLeft) - player.width / 2;
+
+    mouseTracker.x = e.clientX - theCanvas.offsetLeft
   }
 
 function createBullet() {
@@ -143,6 +195,38 @@ function playGame() {
   window.requestAnimationFrame(draw);
 }
 
+function levelUp() {
+  //debugger;
+  playState = false;
+
+  //make the reset screen appear
+  resetScreen.classList.add('show-level-up');
+
+}
+
+function resetGame() {
+  boxes = [
+    { x : randomX(), y : 30, x1 : 30, y1 : 30, image : enemy1, xspeed: 5, yspeed: 8, points : 10 },
+    { x : randomX(), y : 90, x1 : 40, y1 : 40, image : enemy2, xspeed: 5, yspeed: 3, points : 5 },
+    { x : randomX(), y : 150, x1 : 30, y1 : 30, image : enemy3, xspeed: 3, yspeed: 5, points : 10 },
+    { x : randomX(), y : 30, x1 : 30, y1 : 30, image : enemy1, xspeed: 2, yspeed: 4, points : 10 },
+    { x : randomX(), y : 90, x1 : 40, y1 : 40, image : enemy2, xspeed: 2, yspeed: 9, points : 5 },
+    { x : randomX(), y : 150, x1 : 30, y1 : 30, image : enemy3, xspeed: 6, yspeed: 10, points : 10 }
+  ];
+
+  bullets = [];
+
+  player.x = theCanvas.width / 2;
+  playState = true;
+
+  resetScreen.classList.remove('show-level-up');
+  window.requestAnimationFrame(draw);
+}
+
+function randomX() {
+  return Math.floor(Math.random() * (theCanvas.width - 100));
+}
+
   //window.addEventListener('keydown', movePlayer);
   window.requestAnimationFrame(draw);
 
@@ -151,6 +235,9 @@ function playGame() {
 
   pauseButton.addEventListener('click', pauseGame);
   playButton.addEventListener('click', playGame);
+
+  resetButton.addEventListener('click', resetGame);
+
 
 
 })();

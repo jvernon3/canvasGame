@@ -8,9 +8,26 @@
     <title>Canvas Shooter!</title>
   </head>
   <body>
+
+    <!-- this is the background -->
+    <div class="container">
+      <div class="sliding-background"></div>
+    </div>
+
+    <!-- this is the game board -->
     <canvas width="600" height="600"></canvas>
+
+    <div class="level-up">
+      <h4 class="level-up-message"></h4>
+      <p>Ready Player 1?</p>
+      <button class="reset">LEVEL UP</button>
+    </div>
+
     <button class="play">Play Game</button><button class="pause">Pause Game</button>
     <img class="hide-me ship" src="images/galaga_ship.png" alt="Player">
+    <img class="hide-me enemyOne" src="images/enemy1.png" alt="Enemy 1">
+    <img class="hide-me enemyTwo" src="images/enemy2.png" alt="Enemy 2">
+    <img class="hide-me enemyThree" src="images/enemy3.png" alt="Enemy 3">
     <script src="js/main.js"></script>
   </body>
 </html>
